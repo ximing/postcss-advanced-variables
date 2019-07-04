@@ -1,3 +1,4 @@
+const { Rule, Declaration } = require("postcss");
 // return the closest variable from a node
 export default function getClosestVariable(name, node, opts) {
 	const variables = getVariables(node);
@@ -11,7 +12,25 @@ export default function getClosestVariable(name, node, opts) {
 	if (requiresFnVariable(variable, opts)) {
 		variable = getFnVariable(name, node, opts.variables);
 	}
-
+	if (variable) {
+		if (node && node.type === "decl") {
+			if (opts.otherVariables) {
+				Object.keys(opts.otherVariables).forEach(theme => {
+					if (node.parent) {
+						const r = new Rule();
+						r.selector = `&.${theme}`;
+						const d = new Declaration();
+						d.prop = node.props;
+						d.value = getFnVariable(name, node, opts.otherVariables[theme]);
+						r.append(d);
+						node.parent.append(r);
+					} else {
+						console.error(`postcss 替换样式变量${name}的时候没找到对应父节点`);
+					}
+				});
+			}
+		}
+	}
 	return variable;
 }
 
@@ -19,12 +38,14 @@ export default function getClosestVariable(name, node, opts) {
 const getVariables = node => Object(Object(node).variables);
 
 // return whether the variable should be replaced using an ancestor variable
-const requiresAncestorVariable = (variable, node) => undefined === variable && node && node.parent;
+const requiresAncestorVariable = (variable, node) =>
+	undefined === variable && node && node.parent;
 
 // return whether variable should be replaced using a variables function
-const requiresFnVariable = (value, opts) => value === undefined && Object(opts).variables === Object(Object(opts).variables);
+const requiresFnVariable = (value, opts) =>
+	value === undefined &&
+	Object(opts).variables === Object(Object(opts).variables);
 
 // return whether variable should be replaced using a variables function
-const getFnVariable = (name, node, variables) => 'function' === typeof variables
-	? variables(name, node)
-: variables[name];
+const getFnVariable = (name, node, variables) =>
+	"function" === typeof variables ? variables(name, node) : variables[name];
