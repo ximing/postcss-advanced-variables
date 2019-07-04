@@ -1,6 +1,6 @@
 // tooling
-import getClosestVariable from './get-closest-variable';
-import manageUnresolved from './manage-unresolved';
+import getClosestVariable from "./get-closest-variable";
+import manageUnresolved from "./manage-unresolved";
 
 // return content with its variables replaced by the corresponding values of a node
 export default function getReplacedString(string, node, opts) {
@@ -8,7 +8,7 @@ export default function getReplacedString(string, node, opts) {
 		matchVariables,
 		(match, before, name1, name2, name3) => {
 			// conditionally return an (unescaped) match
-			if (before === '\\') {
+			if (before === "\\") {
 				return match.slice(1);
 			}
 
@@ -16,11 +16,16 @@ export default function getReplacedString(string, node, opts) {
 			const name = name1 || name2 || name3;
 
 			// the closest variable value
-			const value = getClosestVariable(name, node.parent, opts);
+			const value = getClosestVariable(name, node.parent, opts, node);
 
 			// if a variable has not been resolved
 			if (undefined === value) {
-				manageUnresolved(node, opts, name, `Could not resolve the variable "$${name}" within "${string}"`);
+				manageUnresolved(
+					node,
+					opts,
+					name,
+					`Could not resolve the variable "$${name}" within "${string}"`
+				);
 
 				return match;
 			}
@@ -39,10 +44,11 @@ export default function getReplacedString(string, node, opts) {
 const matchVariables = /(.?)(?:\$([A-z][\w-]*)|\$\(([A-z][\w-]*)\)|#\{\$([A-z][\w-]*)\})/g;
 
 // return a sass stringified variable
-const stringify = object => Array.isArray(object)
-	? `(${object.map(stringify).join(',')})`
-: Object(object) === object
-	? `(${Object.keys(object).map(
-		key => `${key}:${stringify(object[key])}`
-	).join(',')})`
-: String(object);
+const stringify = object =>
+	Array.isArray(object)
+		? `(${object.map(stringify).join(",")})`
+		: Object(object) === object
+			? `(${Object.keys(object)
+					.map(key => `${key}:${stringify(object[key])}`)
+					.join(",")})`
+			: String(object);

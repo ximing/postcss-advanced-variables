@@ -11,6 +11,7 @@ export default postcss.plugin('postcss-advanced-variables', opts => (root, resul
 	);
 	const unresolvedOpt = String(Object(opts).unresolved || 'throw').toLowerCase();
 	const variablesOpt  = Object(opts).variables;
+	const otherVariablesOpt  = Object(opts).otherVariables;
 	const importCache   = Object(Object(opts).importCache);
 	const importFilter  = Object(opts).importFilter || (id => {
 		return !matchProtocol.test(id);
@@ -30,7 +31,8 @@ export default postcss.plugin('postcss-advanced-variables', opts => (root, resul
 		importRoot,
 		transform: transformOpt,
 		unresolved: unresolvedOpt,
-		variables: variablesOpt
+		variables: variablesOpt,
+		otherVariables:otherVariablesOpt
 	});
 });
 

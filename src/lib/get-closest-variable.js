@@ -1,6 +1,6 @@
-const { Rule, Declaration } = require("postcss");
+const postcss = require("postcss");
 // return the closest variable from a node
-export default function getClosestVariable(name, node, opts) {
+export default function getClosestVariable(name, node, opts, self) {
 	const variables = getVariables(node);
 
 	let variable = variables[name];
@@ -12,23 +12,21 @@ export default function getClosestVariable(name, node, opts) {
 	if (requiresFnVariable(variable, opts)) {
 		variable = getFnVariable(name, node, opts.variables);
 	}
-	if (variable) {
-		if (node && node.type === "decl") {
-			if (opts.otherVariables) {
-				Object.keys(opts.otherVariables).forEach(theme => {
-					if (node.parent) {
-						const r = new Rule();
-						r.selector = `&.${theme}`;
-						const d = new Declaration();
-						d.prop = node.props;
-						d.value = getFnVariable(name, node, opts.otherVariables[theme]);
-						r.append(d);
-						node.parent.append(r);
-					} else {
-						console.error(`postcss 替换样式变量${name}的时候没找到对应父节点`);
-					}
-				});
-			}
+	if (self && variable && opts.otherVariables) {
+		if (self.type === "decl") {
+			Object.keys(opts.otherVariables).forEach(theme => {
+				let saasVariable = getFnVariable(
+					name,
+					node,
+					opts.otherVariables[theme]
+				);
+				if (saasVariable) {
+					const a = postcss.parse(`&.${theme}{ ${self.prop}:${saasVariable};}`);
+					node.append(a);
+				} else {
+					console.error(`在${theme}中找不到变量$${name}`);
+				}
+			});
 		}
 	}
 	return variable;
