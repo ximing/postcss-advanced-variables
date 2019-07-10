@@ -78,7 +78,7 @@ export default function getReplacedString(string, node, opts) {
 					return stringifiedValue;
 				}
 			);
-			const a = postcss.parse(`&.${theme}{ ${node.prop}:${replaced};}`);
+			const a = postcss.parse(`&.${theme}{ ${node.prop}:${replaced}${node.important?' !important':''};}`);
 			a.theme = theme;
 			node.parent.append(a);
 		});
