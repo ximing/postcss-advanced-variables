@@ -1,6 +1,9 @@
-const postcss = require("postcss");
 // return the closest variable from a node
 export default function getClosestVariable(name, node, opts, self) {
+	if (self && self.theme) {
+		let saasVariable = getFnVariable(name, node, opts.otherVariables[self.theme]);
+		return saasVariable;
+	}
 	const variables = getVariables(node);
 
 	let variable = variables[name];
@@ -11,23 +14,6 @@ export default function getClosestVariable(name, node, opts, self) {
 
 	if (requiresFnVariable(variable, opts)) {
 		variable = getFnVariable(name, node, opts.variables);
-	}
-	if (self && variable && opts.otherVariables) {
-		if (self.type === "decl") {
-			Object.keys(opts.otherVariables).forEach(theme => {
-				let saasVariable = getFnVariable(
-					name,
-					node,
-					opts.otherVariables[theme]
-				);
-				if (saasVariable) {
-					const a = postcss.parse(`&.${theme}{ ${self.prop}:${saasVariable};}`);
-					node.append(a);
-				} else {
-					console.error(`在${theme}中找不到变量$${name}`);
-				}
-			});
-		}
 	}
 	return variable;
 }

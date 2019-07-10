@@ -1,12 +1,11 @@
 // tooling
-import getReplacedString from './get-replaced-string';
-import setVariable from './set-variable';
+import getReplacedString from "./get-replaced-string";
+import setVariable from "./set-variable";
 
 // transform declarations
 export default function transformDecl(decl, opts) {
 	// update the declaration value with its variables replaced by their corresponding values
 	decl.value = getReplacedString(decl.value, decl, opts);
-
 	// if the declaration is a variable declaration
 	if (isVariableDeclaration(decl)) {
 		// set the variable on the parent of the declaration
